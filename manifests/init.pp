@@ -1,28 +1,30 @@
-class debian-updater {
+class debian_updater {
 
-  file { "/etc/debian-updater/":
-    ensure => directory,
-    mode   => 0755,
-    owner  => root,
-    group  => wheel,
+  File {
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
   }
 
-  file { "/etc/debian-updater/debian-updates":
-    ensure  => present,
-    source  => "puppet://$servername/debian-updater/debian-updates",
-    require => File["/etc/debian-updater/"]
+  file { '/etc/debian_updater/':
+    ensure => 'directory',
   }
 
-  file { "/usr/local/sbin/package-installed":
-    mode    => 755,
-    owner   => root,
-    group   => root,
-    source  => "puppet://$servername/debian-updater/package-installed",
+  file { '/etc/debian_updater/debian_updates':
+    ensure  => 'file',
+    mode    => '0644',
+    source  => file('debian_updater/debian_updates'),
+    require => File['/etc/debian-updater/'],
   }
 
-  exec { "apt-get update && apt-get install --yes $( cat /etc/debian-updater/debian-updates | /usr/local/sbin/package-installed )":
-    require     => File["/usr/local/sbin/package-installed"],
-    subscribe   => File["/etc/debian-updater/debian-updates"],
+  file { '/usr/local/sbin/package-installed':
+    ensure => 'file',
+    source => file('debian_updater/package-installed'),
+  }
+
+  exec { "apt-get update && apt-get install --yes $( cat /etc/debian_updater/debian_updates | /usr/local/sbin/package-installed )":
+    require     => File['/usr/local/sbin/package-installed'],
+    subscribe   => File['/etc/debian-updater/debian-updates'],
     refreshonly => true
   }
 
